@@ -23,7 +23,6 @@ interface HeaderProps {
 export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
   const [provider, setProvider] = useState<IProvider | null>(null);
   const [loggedIn, setLoggedIn] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [userInfo, setUserInfo] = useState<any>(null);
   const pathname = usePathname()
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -43,9 +42,7 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
         }
       } catch (error) {
         console.error("Error during session initialization:", error);
-      } finally {
-        setLoading(false);
-      }
+      } 
     };
 
     init();
