@@ -6,6 +6,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { StandaloneSearchBox, useJsApiLoader } from '@react-google-maps/api'
 import { Libraries } from '@react-google-maps/api';
 import { useRouter } from 'next/navigation';
+import { getUserByEmail, createReport, getRecentReports } from '@/utils/db/actions';
 import { toast } from 'react-hot-toast'
 import { getSession } from "next-auth/react";
 
@@ -15,7 +16,7 @@ const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 const libraries: Libraries = ['places'];
 
 export default function ReportPage() {
-    const [user, setUser] = useState<{ email: string; name: string } | null>(null);
+    const [user, setUser] = useState<{ id: number; email: string; name: string } | null>(null);
     const router = useRouter();
 
     const [reports, setReports] = useState<Array<{
@@ -162,6 +163,29 @@ export default function ReportPage() {
 
         setIsSubmitting(true);
         try {
+            const report = await createReport(
+                user.id,
+                newReport.location,
+                newReport.type,
+                newReport.amount,
+                preview || undefined,
+                verificationResult ? JSON.stringify(verificationResult) : undefined
+            ) as any;
+
+            const formattedReport = {
+                id: report.id,
+                location: report.location,
+                wasteType: report.wasteType,
+                amount: report.amount,
+                createdAt: report.createdAt.toISOString().split('T')[0]
+            };
+
+            setReports([formattedReport, ...reports]);
+            setNewReport({ location: '', type: '', amount: '' });
+            setFile(null);
+            setPreview(null);
+            setVerificationStatus('idle');
+            setVerificationResult(null);
             toast.success(`Report submitted successfully! You've earned points for reporting waste.`);
         } catch (error) {
             console.error('Error submitting report:', error);
@@ -176,11 +200,18 @@ export default function ReportPage() {
             const session = await getSession();
 
             if (session && session.user) {
+                let user = await getUserByEmail(session.user.email || "");
                 setUser({
+                    id: Number(user?.id),
                     email: session.user.email as string,
                     name: session.user.name as string
                 });
-                console.log(user)
+                const recentReports = await getRecentReports();
+                const formattedReports = recentReports.map(report => ({
+                    ...report,
+                    createdAt: report.createdAt.toISOString().split('T')[0]
+                }));
+                setReports(formattedReports);
             } else {
                 toast.error('Please log in first.');
                 router.push('/');

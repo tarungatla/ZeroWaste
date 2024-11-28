@@ -14,6 +14,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { useMediaQuery } from "@/hooks/useMediaQuery"
 import { signIn, signOut, getSession } from "next-auth/react";
+import { createUser, getUnreadNotifications, markNotificationAsRead, getUserByEmail, getUserBalance } from "@/utils/db/actions"
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -34,15 +35,16 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
     const init = async () => {
       try {
         const session = await getSession();
-        if (session) {
+        if (session && session.user) {
           setUserInfo(session.user);
           setLoggedIn(true);
+          await createUser(session.user.email, session.user.name);
         } else {
           setLoggedIn(false);
         }
       } catch (error) {
         console.error("Error during session initialization:", error);
-      } 
+      }
     };
 
     init();
@@ -50,6 +52,13 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
 
   useEffect(() => {
     const fetchNotifications = async () => {
+      if (userInfo && userInfo.email) {
+        const user = await getUserByEmail(userInfo.email);
+        if (user) {
+          const unreadNotifications = await getUnreadNotifications(user.id);
+          setNotifications(unreadNotifications);
+        }
+      }
     };
 
     fetchNotifications();
@@ -62,6 +71,13 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
 
   useEffect(() => {
     const fetchUserBalance = async () => {
+      if (userInfo && userInfo.email) {
+        const user = await getUserByEmail(userInfo.email);
+        if (user) {
+          const userBalance = await getUserBalance(user.id);
+          setBalance(userBalance);
+        }
+      }
     };
 
     fetchUserBalance();
@@ -83,6 +99,8 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
       await signIn("google");
     } catch (error) {
       console.error("Error during login:", error);
+    } finally {
+      await createUser(session.user.email, session.user.name);
     }
   };
 
@@ -108,7 +126,10 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
   };
 
   const handleNotificationClick = async (notificationId: number) => {
-
+    await markNotificationAsRead(notificationId);
+    setNotifications(prevNotifications =>
+      prevNotifications.filter(notification => notification.id !== notificationId)
+    );
   }
 
   return (
