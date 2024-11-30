@@ -97,13 +97,17 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
   const login = async () => {
     try {
       await signIn("google");
+      const session = await getSession();  // Make sure the session is fetched after login
+      if (session && session.user) {
+        await createUser(session.user.email, session.user.name);
+        setUserInfo(session.user);
+        setLoggedIn(true);
+      }
     } catch (error) {
       console.error("Error during login:", error);
-    } finally {
-      await createUser(session.user.email, session.user.name);
     }
   };
-
+  
   const logout = async () => {
     try {
       await signOut();
