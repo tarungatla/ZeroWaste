@@ -1,8 +1,8 @@
 "use server"
 
 import { db } from './dbConfig';
-import { Users, Reports, Rewards, CollectedWastes, Notifications, Transactions } from './schema';
-import { eq, sql, and, desc, ne } from 'drizzle-orm';
+import { Users, Reports, CollectedWastes, Notifications, Transactions } from './schema';
+import { eq, and, desc } from 'drizzle-orm';
 
 export async function createUser(email: string, name: string) {
   try {
@@ -28,6 +28,21 @@ export async function getUserByEmail(email: string) {
     return null;
   }
 }
+
+export async function getAllUsers(): Promise<{ id: number; name: string }[]> {
+  try {
+      // Implement database query to fetch all users
+    const users = await db.select().from(Users).execute(); // Replace 'Users' with your actual table/schema
+    return users.map(user => ({
+      id: user.id,
+      name: user.name || 'Anonymous',
+    }));
+  } catch (error) {
+    console.error("Error fetching all users:", error);
+    return [];
+  }
+}
+
 
 export async function getRewardTransactions(userId: number) {
   try {
@@ -235,27 +250,5 @@ export async function saveCollectedWaste(reportId: number, collectorId: number, 
   } catch (error) {
     console.error("Error saving collected waste:", error);
     throw error;
-  }
-}
-
-export async function getAllRewards() {
-  try {
-    const rewards = await db
-      .select({
-        id: Rewards.id,
-        userId: Rewards.userId,
-        points: Rewards.points,
-        createdAt: Rewards.createdAt,
-        userName: Users.name,
-      })
-      .from(Rewards)
-      .leftJoin(Users, eq(Rewards.userId, Users.id))
-      .orderBy(desc(Rewards.points))
-      .execute();
-
-    return rewards;
-  } catch (error) {
-    console.error("Error fetching all rewards:", error);
-    return [];
   }
 }
