@@ -39,6 +39,7 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
           setUserInfo(session.user);
           setLoggedIn(true);
           await createUser(session.user.email, session.user.name);
+          localStorage.setItem('userEmail', session.user.email);
         } else {
           setLoggedIn(false);
         }
@@ -110,6 +111,9 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
   
   const logout = async () => {
     try {
+      setLoggedIn(false);
+      setUserInfo(null);
+      localStorage.removeItem('userEmail');
       await signOut();
     } catch (error) {
       console.error("Error during logout:", error);
@@ -220,10 +224,6 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
                 <DropdownMenuItem onClick={getUserInfo}>
                   {userInfo ? userInfo.name : "Fetch User Info"}
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Link href="/settings">Profile</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem>Settings</DropdownMenuItem>
                 <DropdownMenuItem onClick={logout}>Sign Out</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

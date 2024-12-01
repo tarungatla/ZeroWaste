@@ -4,9 +4,8 @@ import { Trash2, MapPin, CheckCircle, Clock, ArrowRight, Camera, Upload, Loader,
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { toast } from 'react-hot-toast'
-import { getWasteCollectionTasks, updateTaskStatus, saveReward, saveCollectedWaste, getUserByEmail } from '@/utils/db/actions'
+import { getWasteCollectionTasks, updateTaskStatus, createTransaction, saveCollectedWaste, getUserByEmail } from '@/utils/db/actions'
 import { GoogleGenerativeAI } from "@google/generative-ai"
-import { getSession } from "next-auth/react";
 
 // Make sure to set your Gemini API key in your environment variables
 const geminiApiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY
@@ -36,10 +35,9 @@ export default function CollectPage() {
       setLoading(true)
       try {
         // Fetch user
-        const session = await getSession();
-
-        if (session && session.user && session.user.email) {
-          const fetchedUser = await getUserByEmail(session.user.email)
+        const userEmail = localStorage.getItem('userEmail')
+        if (userEmail) {
+          const fetchedUser = await getUserByEmail(userEmail)
           if (fetchedUser) {
             setUser(fetchedUser)
           } else {
@@ -149,7 +147,7 @@ export default function CollectPage() {
 
       const result = await model.generateContent([prompt, ...imageParts])
       const response = await result.response
-      const text = response.text()
+      const text = response.text().replace(/```(\w+)?\n?/g, '').replace(/```/g, '');
       
       try {
         const parsedResult = JSON.parse(text)
@@ -159,13 +157,13 @@ export default function CollectPage() {
           confidence: parsedResult.confidence
         })
         setVerificationStatus('success')
-        
+        console.log('parsedResult:', parsedResult)
         if (parsedResult.wasteTypeMatch && parsedResult.quantityMatch && parsedResult.confidence > 0.7) {
           await handleStatusChange(selectedTask.id, 'verified')
           const earnedReward = Math.floor(Math.random() * 50) + 10 // Random reward between 10 and 59
           
           // Save the reward
-          await saveReward(user.id, earnedReward)
+          await createTransaction(user.id, 'earned_collect', earnedReward, 'Points earned for collecting waste')
 
           // Save the collected waste
           await saveCollectedWaste(selectedTask.id, user.id, parsedResult)

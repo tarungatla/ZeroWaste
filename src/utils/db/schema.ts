@@ -24,10 +24,8 @@ export const Rewards = pgTable("rewards", {
     id: serial("id").primaryKey(),
     userId: integer("user_id").references(() => Users.id).notNull(),
     points: integer("points").notNull().default(0),
-    level: integer("level").notNull().default(1),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
-    isAvailable: boolean("is_available").notNull().default(true),
     description: text("description"),
     name: varchar("name", { length: 255 }).notNull(),
     collectionInfo: text("collection_info").notNull(),
@@ -53,7 +51,7 @@ export const Notifications = pgTable("notifications", {
 export const Transactions = pgTable("transactions", {
     id: serial("id").primaryKey(),
     userId: integer("user_id").references(() => Users.id).notNull(),
-    type: varchar("type", { length: 20 }).notNull(), // 'earned' or 'redeemed'
+    type: varchar("type", { length: 20 }).notNull(), 
     amount: integer("amount").notNull(),
     description: text("description").notNull(),
     date: timestamp("date").defaultNow().notNull(),

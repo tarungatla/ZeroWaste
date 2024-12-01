@@ -28,10 +28,10 @@ function AnimatedGlobe() {
 export default function Home() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [impactData, setImpactData] = useState({
-    wasteCollected: 0,
-    reportsSubmitted: 0,
-    tokensEarned: 0,
-    co2Offset: 0
+    wasteCollected: 78,
+    reportsSubmitted: 52,
+    tokensEarned: 120,
+    co2Offset: 150
   });
 
   useEffect(() => {
