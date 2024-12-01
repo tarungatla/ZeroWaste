@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { toast } from 'react-hot-toast'
 import { getWasteCollectionTasks, updateTaskStatus, createTransaction, saveCollectedWaste, getUserByEmail } from '@/utils/db/actions'
 import { GoogleGenerativeAI } from "@google/generative-ai"
+import { useRouter } from 'next/navigation';
 
 // Make sure to set your Gemini API key in your environment variables
 const geminiApiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY
@@ -29,6 +30,8 @@ export default function CollectPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [user, setUser] = useState<{ id: number; email: string; name: string } | null>(null)
+  const router = useRouter();
+
 
   useEffect(() => {
     const fetchUserAndTasks = async () => {
@@ -46,6 +49,7 @@ export default function CollectPage() {
           }
         } else {
           toast.error('User not logged in. Please log in.')
+          router.push('/');
           // Redirect to login page or handle this case appropriately
         }
 

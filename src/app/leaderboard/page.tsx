@@ -13,7 +13,6 @@ type UserWithBalance = {
 export default function LeaderboardPage() {
   const [leaderboard, setLeaderboard] = useState<UserWithBalance[]>([]);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<{ id: number; email: string; name: string } | null>(null);
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
@@ -34,18 +33,6 @@ export default function LeaderboardPage() {
         const sortedLeaderboard = usersWithBalances.sort((a, b) => b.points - a.points);
         setLeaderboard(sortedLeaderboard);
 
-        // Get current user from localStorage
-        const userEmail = localStorage.getItem('userEmail');
-        if (userEmail) {
-          const currentUser = await getUserByEmail(userEmail);
-          if (currentUser) {
-            setUser(currentUser);
-          } else {
-            toast.error('User not found. Please log in again.');
-          }
-        } else {
-          toast.error('User not logged in. Please log in.');
-        }
       } catch (error) {
         console.error('Error fetching leaderboard:', error);
         toast.error('Failed to load leaderboard. Please try again.');

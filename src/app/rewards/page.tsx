@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { Coins, ArrowUpRight, ArrowDownRight,  Loader } from 'lucide-react'
 import { getUserByEmail, getRewardTransactions } from '@/utils/db/actions'
 import { toast } from 'react-hot-toast'
+import { useRouter } from 'next/navigation';
 
 type Transaction = {
   id: number
@@ -17,6 +18,7 @@ export default function RewardsPage() {
   const [balance, setBalance] = useState(0)
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
+  const router = useRouter();
 
   useEffect(() => {
     const fetchUserDataAndRewards = async () => {
@@ -39,6 +41,7 @@ export default function RewardsPage() {
           }
         } else {
           toast.error('User not logged in. Please log in.')
+          router.push('/');
         }
       } catch (error) {
         console.error('Error fetching user data and rewards:', error)

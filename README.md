@@ -41,7 +41,64 @@ An innovative AI-powered waste management platform designed to incentivize and s
 - Next.js deployment tools to ensure smooth production-level deployment.
 
 ---
+### Database Schema
+```mermaid
+erDiagram
+  Users {
+    Integer id
+    String email
+    String name
+    DateTime createdAt
+  }
+  
+  Reports {
+    Integer id
+    Integer userId
+    String location
+    String wasteType
+    String amount
+    String imageUrl
+    Jsonb verificationResult
+    String status
+    DateTime createdAt
+    Integer collectorId
+  }
+  
+  CollectedWastes {
+    Integer id
+    Integer reportId
+    Integer collectorId
+    DateTime collectionDate
+    String status
+  }
+  
+  Notifications {
+    Integer id
+    Integer userId
+    String message
+    String type
+    Boolean isRead
+    DateTime createdAt
+  }
+  
+  Transactions {
+    Integer id
+    Integer userId
+    String type
+    Integer amount
+    String description
+    DateTime date
+  }
 
+  %% Relationships
+  Users ||--o{ Reports : "1:N"
+  Users ||--o{ CollectedWastes : "1:N"
+  Users ||--o{ Notifications : "1:N"
+  Users ||--o{ Transactions : "1:N"
+  Reports ||--o{ CollectedWastes : "1:1"
+
+```
+---
 ## 🚀 **Project Setup Instructions**  
 
 ### **1. Prerequisites**  
